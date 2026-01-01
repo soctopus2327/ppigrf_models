@@ -246,7 +246,7 @@ def get_legendre(theta, keys):
     return Pmat, dPmat    
 
 
-def read_shc(filename = shc_fn):
+def read_shc(filename):
     """ 
     Read .shc (spherical harmonic coefficient) file
 
