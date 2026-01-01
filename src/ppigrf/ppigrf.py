@@ -76,10 +76,30 @@ import numpy as np
 import pandas as pd
 import os
 
+# basepath = os.path.dirname(__file__)
+# shc_fn = basepath + '/IGRF14.shc' # Default shc file
+# shc_fn_igrf13 = basepath + '/IGRF13.shc'
+# shc_fn_igrf14 = basepath + '/IGRF14.shc'
+
 basepath = os.path.dirname(__file__)
-shc_fn = basepath + '/IGRF14.shc' # Default shc file
-shc_fn_igrf13 = basepath + '/IGRF13.shc'
-shc_fn_igrf14 = basepath + '/IGRF14.shc'
+
+MODEL_FILES = {
+    "igrf10": os.path.join(basepath, "IGRF10.shc"),
+    "igrf11": os.path.join(basepath, "IGRF11.shc"),
+    "igrf12": os.path.join(basepath, "IGRF12.shc"),
+    "igrf13": os.path.join(basepath, "IGRF13.shc"),
+    "igrf14": os.path.join(basepath, "IGRF14.shc"),
+}
+
+DEFAULT_MODEL = "igrf14"
+
+def _get_coeff_fn(model):
+    if model not in MODEL_FILES:
+        raise ValueError(
+            f"Unknown IGRF model '{model}'. "
+            f"Available models: {list(MODEL_FILES.keys())}"
+        )
+    return MODEL_FILES[model]
 
 # Geomagnetic reference radius:
 RE = 6371.2 # km
@@ -442,7 +462,7 @@ def geoc2geod(theta, r, B_th, B_r):
 
 
 
-def igrf_gc(r, theta, phi, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
+def igrf_gc(r, theta, phi, date, model=DEFAULT_MODEL, min_degree=1, max_degree=13):
     """
     Calculate IGRF model components
 
@@ -484,6 +504,7 @@ def igrf_gc(r, theta, phi, date, coeff_fn = shc_fn, min_degree=1, max_degree=13)
     """
 
     # read coefficient file:
+    coeff_fn = _get_coeff_fn(model)
     g, h = read_shc(coeff_fn)
 
     if not hasattr(date, '__iter__'):
@@ -554,7 +575,7 @@ def igrf_gc(r, theta, phi, date, coeff_fn = shc_fn, min_degree=1, max_degree=13)
     return Br.reshape(outshape), Btheta.reshape(outshape), Bphi.reshape(outshape)
 
 
-def igrf(lon, lat, h, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
+def igrf(lon, lat, h, date, model=DEFAULT_MODEL, min_degree=1, max_degree=13):
     """
     Calculate IGRF model components
 
@@ -611,7 +632,7 @@ def igrf(lon, lat, h, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
     phi = lon
 
     # calculate geocentric components of IGRF:
-    Br, Btheta, Bphi = igrf_gc(r, theta, phi, date, coeff_fn = coeff_fn, min_degree=min_degree, max_degree=max_degree)
+    Br, Btheta, Bphi = igrf_gc(r, theta, phi, date, model=model, min_degree=min_degree, max_degree=max_degree)
     Be = Bphi
 
     # convert output to geodetic
@@ -622,7 +643,7 @@ def igrf(lon, lat, h, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
     return Be.reshape(outshape), Bn.reshape(outshape), Bu.reshape(outshape)
 
 
-def igrf_V(r, theta, phi, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
+def igrf_V(r, theta, phi, date, model=model, min_degree=1, max_degree=13):
     """
     Calculate IGRF magnetic potential
 
@@ -665,6 +686,7 @@ def igrf_V(r, theta, phi, date, coeff_fn = shc_fn, min_degree=1, max_degree=13):
         min_degree, max_degree = 1, 13
 
     # read coefficient file:
+    coeff_fn = _get_coeff_fn(model)
     g, h = read_shc(coeff_fn)
 
     if not hasattr(date, '__iter__'):
