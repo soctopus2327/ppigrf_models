@@ -643,7 +643,7 @@ def igrf(lon, lat, h, date, model=DEFAULT_MODEL, min_degree=1, max_degree=13):
     return Be.reshape(outshape), Bn.reshape(outshape), Bu.reshape(outshape)
 
 
-def igrf_V(r, theta, phi, date, model=model, min_degree=1, max_degree=13):
+def igrf_V(r, theta, phi, date, model=DEFAULT_MODEL, min_degree=1, max_degree=13):
     """
     Calculate IGRF magnetic potential
 
